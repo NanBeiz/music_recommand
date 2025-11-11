@@ -1,0 +1,203 @@
+[
+  {
+    "id": 1,
+    "title": "Yesterday Once More",
+    "artist": "Carpenters",
+    "genre": "Pop",
+    "mood": "nostalgic",
+    "year": 1973,
+    "duration": 236,
+    "language": "English"
+  },
+  {
+    "id": 2,
+    "title": "Bohemian Rhapsody",
+    "artist": "Queen",
+    "genre": "Rock",
+    "mood": "epic",
+    "year": 1975,
+    "duration": 355,
+    "language": "English"
+  },
+  {
+    "id": 3,
+    "title": "Hotel California",
+    "artist": "Eagles",
+    "genre": "Rock",
+    "mood": "mysterious",
+    "year": 1977,
+    "duration": 391,
+    "language": "English"
+  },
+  {
+    "id": 4,
+    "title": "Shape of You",
+    "artist": "Ed Sheeran",
+    "genre": "Pop",
+    "mood": "energetic",
+    "year": 2017,
+    "duration": 233,
+    "language": "English"
+  },
+  {
+    "id": 5,
+    "title": "Someone Like You",
+    "artist": "Adele",
+    "genre": "Pop",
+    "mood": "sad",
+    "year": 2011,
+    "duration": 285,
+    "language": "English"
+  },
+  {
+    "id": 6,
+    "title": "Billie Jean",
+    "artist": "Michael Jackson",
+    "genre": "Pop",
+    "mood": "energetic",
+    "year": 1983,
+    "duration": 294,
+    "language": "English"
+  },
+  {
+    "id": 7,
+    "title": "Stairway to Heaven",
+    "artist": "Led Zeppelin",
+    "genre": "Rock",
+    "mood": "epic",
+    "year": 1971,
+    "duration": 482,
+    "language": "English"
+  },
+  {
+    "id": 8,
+    "title": "Imagine",
+    "artist": "John Lennon",
+    "genre": "Pop",
+    "mood": "calm",
+    "year": 1971,
+    "duration": 183,
+    "language": "English"
+  },
+  {
+    "id": 9,
+    "title": "Yesterday",
+    "artist": "The Beatles",
+    "genre": "Pop",
+    "mood": "sad",
+    "year": 1965,
+    "duration": 125,
+    "language": "English"
+  },
+  {
+    "id": 10,
+    "title": "Sweet Child O' Mine",
+    "artist": "Guns N' Roses",
+    "genre": "Rock",
+    "mood": "energetic",
+    "year": 1988,
+    "duration": 356,
+    "language": "English"
+  },
+  {
+    "id": 11,
+    "title": "What a Wonderful World",
+    "artist": "Louis Armstrong",
+    "genre": "Jazz",
+    "mood": "happy",
+    "year": 1967,
+    "duration": 139,
+    "language": "English"
+  },
+  {
+    "id": 12,
+    "title": "Moonlight Sonata",
+    "artist": "Beethoven",
+    "genre": "Classical",
+    "mood": "calm",
+    "year": 1801,
+    "duration": 900,
+    "language": "Instrumental"
+  },
+  {
+    "id": 13,
+    "title": "Despacito",
+    "artist": "Luis Fonsi",
+    "genre": "Latin",
+    "mood": "energetic",
+    "year": 2017,
+    "duration": 229,
+    "language": "Spanish"
+  },
+  {
+    "id": 14,
+    "title": "Hallelujah",
+    "artist": "Leonard Cohen",
+    "genre": "Folk",
+    "mood": "sad",
+    "year": 1984,
+    "duration": 272,
+    "language": "English"
+  },
+  {
+    "id": 15,
+    "title": "Don't Stop Believin'",
+    "artist": "Journey",
+    "genre": "Rock",
+    "mood": "energetic",
+    "year": 1981,
+    "duration": 251,
+    "language": "English"
+  },
+  {
+    "id": 16,
+    "title": "Let It Be",
+    "artist": "The Beatles",
+    "genre": "Pop",
+    "mood": "calm",
+    "year": 1970,
+    "duration": 243,
+    "language": "English"
+  },
+  {
+    "id": 17,
+    "title": "Thunderstruck",
+    "artist": "AC/DC",
+    "genre": "Rock",
+    "mood": "energetic",
+    "year": 1990,
+    "duration": 292,
+    "language": "English"
+  },
+  {
+    "id": 18,
+    "title": "Fix You",
+    "artist": "Coldplay",
+    "genre": "Pop",
+    "mood": "sad",
+    "year": 2005,
+    "duration": 294,
+    "language": "English"
+  },
+  {
+    "id": 19,
+    "title": "Happy",
+    "artist": "Pharrell Williams",
+    "genre": "Pop",
+    "mood": "happy",
+    "year": 2013,
+    "duration": 232,
+    "language": "English"
+  },
+  {
+    "id": 20,
+    "title": "Smells Like Teen Spirit",
+    "artist": "Nirvana",
+    "genre": "Rock",
+    "mood": "energetic",
+    "year": 1991,
+    "duration": 301,
+    "language": "English"
+  }
+]
+

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI音乐推荐智能体</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            max-width: 800px;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .chat-container {
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 400px;
+            max-height: 500px;
+            overflow-y: auto;
+            background: #f9f9f9;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            max-width: 80%;
+            word-wrap: break-word;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.user {
+            background: #667eea;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .message.assistant {
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+        }
+
+        .songs-list {
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f0f0;
+            border-radius: 8px;
+        }
+
+        .song-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 5px;
+            border-left: 3px solid #667eea;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 15px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            color: #e74c3c;
+            padding: 10px;
+            background: #ffeaea;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        .examples {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f0f4ff;
+            border-radius: 10px;
+        }
+
+        .examples h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .example-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            margin: 5px;
+            background: white;
+            border: 1px solid #667eea;
+            color: #667eea;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 AI音乐推荐智能体</h1>
+        <p class="subtitle">告诉我你的心情，我来为你推荐合适的音乐</p>
+
+        <div class="chat-container" id="chatContainer">
+            <div class="message assistant">
+                <p>你好！我是你的AI音乐推荐助手。你可以告诉我：</p>
+                <ul style="margin-top: 10px; padding-left: 20px;">
+                    <li>你想要的心情（比如：悲伤、开心、兴奋）</li>
+                    <li>你喜欢的音乐类型（比如：摇滚、流行、爵士）</li>
+                    <li>你想听的歌手或歌曲</li>
+                </ul>
+                <p style="margin-top: 10px;">试试说："我想听点悲伤的歌" 或 "推荐一些摇滚音乐"</p>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <input 
+                type="text" 
+                id="userInput" 
+                placeholder="输入你的音乐需求..." 
+                onkeypress="if(event.key === 'Enter') sendMessage()"
+            >
+            <button id="sendBtn" onclick="sendMessage()">发送</button>
+        </div>
+
+        <div class="examples">
+            <h3>💡 示例问题：</h3>
+            <span class="example-btn" onclick="setExample('我想听点悲伤的歌')">悲伤的歌</span>
+            <span class="example-btn" onclick="setExample('推荐一些摇滚音乐')">摇滚音乐</span>
+            <span class="example-btn" onclick="setExample('我想听点嗨的')">嗨的音乐</span>
+            <span class="example-btn" onclick="setExample('推荐Adele的歌')">Adele的歌</span>
+            <span class="example-btn" onclick="setExample('我想听平静的音乐')">平静的音乐</span>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://127.0.0.1:5000/recommend';
+        
+        function setExample(text) {
+            document.getElementById('userInput').value = text;
+            sendMessage();
+        }
+
+        function addMessage(text, type) {
+            const chatContainer = document.getElementById('chatContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            messageDiv.innerHTML = `<p>${text}</p>`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function addSongs(songs) {
+            if (!songs || songs.length === 0) return;
+            
+            const chatContainer = document.getElementById('chatContainer');
+            const songsDiv = document.createElement('div');
+            songsDiv.className = 'songs-list';
+            songsDiv.innerHTML = '<strong>🎵 推荐歌曲：</strong>';
+            
+            songs.forEach(song => {
+                const songItem = document.createElement('div');
+                songItem.className = 'song-item';
+                songItem.innerHTML = `
+                    <strong>${song.title || '未知'}</strong> - ${song.artist || '未知'}<br>
+                    <small>类型: ${song.genre || '未知'} |  mood: ${song.mood || '未知'}</small>
+                `;
+                songsDiv.appendChild(songItem);
+            });
+            
+            chatContainer.appendChild(songsDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const userMessage = input.value.trim();
+
+            if (!userMessage) return;
+
+            // 显示用户消息
+            addMessage(userMessage, 'user');
+            input.value = '';
+
+            // 禁用按钮并显示加载
+            sendBtn.disabled = true;
+            sendBtn.innerHTML = '<div class="loading"></div>';
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ message: userMessage })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // 显示推荐回复
+                    addMessage(data.recommendation, 'assistant');
+                    
+                    // 显示推荐歌曲
+                    if (data.matched_songs && data.matched_songs.length > 0) {
+                        addSongs(data.matched_songs);
+                    }
+                } else {
+                    addMessage(`错误: ${data.error || '未知错误'}`, 'assistant');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                addMessage(`连接错误: 请确保后端服务正在运行 (${API_URL})`, 'assistant');
+            } finally {
+                sendBtn.disabled = false;
+                sendBtn.innerHTML = '发送';
+            }
+        }
+    </script>
+</body>
+</html>
+
