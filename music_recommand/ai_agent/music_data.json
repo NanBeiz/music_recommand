@@ -4838,8 +4838,6 @@
     "artist": "赵雷",
     "genre": "民谣",
     "mood": "怀旧、感慨",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4849,8 +4847,6 @@
     "artist": "赵雷",
     "genre": "folk",
     "mood": "坚韧、励志",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4860,8 +4856,6 @@
     "artist": "赵雷",
     "genre": "folk",
     "mood": "感慨、深情",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4871,8 +4865,6 @@
     "artist": "赵雷",
     "genre": "folk",
     "mood": "轻松、幽默",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4882,8 +4874,6 @@
     "artist": "赵雷",
     "genre": "folk",
     "mood": "感人、深情",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4893,8 +4883,6 @@
     "artist": "陈绮贞",
     "genre": "Folk",
     "mood": "温柔、思念",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4904,8 +4892,6 @@
     "artist": "田馥甄",
     "genre": "Folk",
     "mood": "清新、治愈",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4915,8 +4901,6 @@
     "artist": "莫文蔚",
     "genre": "Folk",
     "mood": "甜蜜、温暖",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4926,8 +4910,6 @@
     "artist": "Eagles",
     "genre": "Folk Rock",
     "mood": "自由、怀旧",
-    "year": null,
-    "duration": 0,
     "language": "English",
     "source_type": "llm_generated"
   },
@@ -4937,8 +4919,6 @@
     "artist": "贰佰",
     "genre": "Folk",
     "mood": "温柔、怀旧",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4948,8 +4928,6 @@
     "artist": "贰佰",
     "genre": "Folk",
     "mood": "轻松、治愈",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4959,8 +4937,6 @@
     "artist": "贰佰",
     "genre": "Folk",
     "mood": "激情、热烈",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4970,8 +4946,6 @@
     "artist": "贰佰",
     "genre": "Folk",
     "mood": "温柔、孤独",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4981,8 +4955,6 @@
     "artist": "贰佰",
     "genre": "Folk",
     "mood": "温暖、治愈",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -4992,8 +4964,6 @@
     "artist": "陈绮贞",
     "genre": "Folk",
     "mood": "怀旧",
-    "year": null,
-    "duration": 0,
     "language": "Mandarin",
     "source_type": "llm_generated"
   },
@@ -5003,9 +4973,40 @@
     "artist": "赵雷",
     "genre": "Folk",
     "mood": "温柔",
+    "language": "Mandarin",
+    "source_type": "llm_generated"
+  },
+  {
+    "id": 621,
+    "title": "A Thousand Years",
+    "artist": "Christina Perri",
+    "genre": "Pop",
+    "mood": "Sad",
     "year": null,
     "duration": 0,
-    "language": "Mandarin",
+    "language": "English",
+    "source_type": "llm_generated"
+  },
+  {
+    "id": 622,
+    "title": "Lovers",
+    "artist": "Hozier",
+    "genre": "Alternative",
+    "mood": "Sad",
+    "year": null,
+    "duration": 0,
+    "language": "English",
+    "source_type": "llm_generated"
+  },
+  {
+    "id": 623,
+    "title": "Dancing Queen",
+    "artist": "ABBA",
+    "genre": "Disco",
+    "mood": "Melancholic",
+    "year": null,
+    "duration": 0,
+    "language": "English",
     "source_type": "llm_generated"
   }
 ]

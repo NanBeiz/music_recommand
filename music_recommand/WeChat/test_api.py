@@ -12,7 +12,7 @@ def test_recommend_flow():
         print(f"正在连接 {BASE_URL}/recommend ...")
         response = requests.post(
             f"{BASE_URL}/recommend",
-            json={"message": "朴树", "session_id": "test_user_001"}
+            json={"message": "想听李健的歌", "session_id": "test_user_001"}
         )
         print("推荐接口状态码:", response.status_code)
         # 只要没有报错，pytest 就认为测试通过

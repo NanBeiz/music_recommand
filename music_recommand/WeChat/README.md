@@ -1,259 +1,152 @@
-# 🎵 AI音乐推荐智能体
+# 🎵 AI 音乐推荐智能体 (WeChat Edition)
 
-一个基于LLM的智能音乐推荐系统，支持多种大语言模型（DeepSeek、OpenAI、通义千问、智谱AI、月之暗面等），结合了自然语言处理、知识库检索和生成式AI技术。
+> 一个具备**自我核查**、**知识库自学习**与**长期记忆**能力的 AI 音乐助手，专为微信公众号环境打造。
 
-## ✨ 功能特点
+本项目是一个基于大语言模型（LLM）的智能 Agent，能够理解用户的自然语言需求，从本地知识库或外部生成推荐。它集成了**反幻觉机制 (Anti-Hallucination)**，确保推荐的歌曲真实存在，并支持通过微信接口进行异步交互。
 
-- 🤖 **智能意图识别**: 使用LLM理解用户的自然语言输入
-- 🧠 **智能推理**: 根据用户需求生成精确的搜索查询
-- 📚 **知识库检索**: 从JSON格式的音乐数据库中快速检索匹配歌曲
-- 💬 **自然回复**: 生成友好、个性化的音乐推荐回复
-- 🌐 **Web界面**: 美观易用的前端界面
-- 🔄 **多模型支持**: 支持DeepSeek、OpenAI、通义千问、智谱AI、月之暗面等多种LLM
+## ✨ 核心特性
+
+- **🧠 多模型驱动**: 支持通义千问 (Qwen)、OpenAI、智谱 AI (Zhipu)、月之暗面 (Moonshot) 等多种 LLM 切换。
+- **🛡️ 幻觉校验机制 (Verifier)**: 内置“版权审核员”Agent，对 LLM 生成的推荐结果进行二次核查，剔除不存在的虚假歌曲（拒绝“张冠李戴”）。
+- **📚 RAG 与自学习**: 优先检索本地 JSON 知识库；若本地无匹配，则利用 LLM 生成并验证，验证通过的歌曲会自动**写入知识库**，实现越用越聪明。
+- **💬 智能上下文记忆**: 基于滑动窗口机制维护对话历史，支持多轮对话，并能根据用户历史偏好进行去重推荐。
+- **⚡ 微信异步响应**: 针对微信服务器 5 秒超时限制，采用**异步线程池**处理推荐任务，并通过中转服务器主动推送客服消息。
+- **📊 数据持久化**: 使用 SQLite + SQLAlchemy 记录所有用户交互 (`User`) 和对话日志 (`ChatLog`)，并提供管理后台接口。
+- **🐳 Docker 开箱即用**: 提供完整的 Docker 和 Docker Compose 配置，集成 Ngrok 内网穿透。
 
 ## 🏗️ 项目架构
 
 ```
-ai_agent/
-├── app.py                    # Flask后端主应用
-├── llm_client.py            # 通用LLM客户端（支持多模型）
-├── deepseek_client.py       # DeepSeek客户端（向后兼容）
-├── knowledge_base.py        # 知识库管理模块
-├── music_data.json          # 音乐数据（JSON格式）
-├── index.html               # 前端Web界面
-├── requirements.txt         # Python依赖
-├── env_example.txt          # 环境变量示例
-├── MODEL_SWITCHING_GUIDE.md # 模型切换指南
-└── README.md                # 项目文档
+WeChat/
+├── wechat_service.py       # [核心] Flask 主服务，包含路由、业务编排与后台任务管理
+├── llm_client.py           # [核心] LLM 客户端工厂，封装各家大模型 API
+├── knowledge_base.py       # [数据] JSON 知识库管理，支持模糊搜索与持久化
+├── verifier.py             # [组件] 歌曲真实性校验器 (Anti-Hallucination)
+├── memory_manager.py       # [组件] 会话记忆与去重逻辑
+├── music_data.json         # [数据] 本地音乐元数据文件
+├── wechat_data.db          # [数据] SQLite 数据库 (用户与日志)
+├── docker-compose.yml      # Docker 编排文件
+└── requirements.txt        # Python 依赖
 ```
 
 ## 🚀 快速开始
 
-### 1. 安装依赖
+### 1. 环境准备
 
-```bash
-pip install -r requirements.txt
+确保已安装 Python 3.8+ 或 Docker。
+
+### 2. 配置环境变量
+
+复制 `.env` 文件并填入你的 API Key：
+
 ```
-
-### 2. 配置API密钥
-
-创建 `.env` 文件，并填入你的DeepSeek API密钥：
-
-**Windows:**
-```bash
+# Linux/Mac
+cp env_example.txt .env
+# Windows
 copy env_example.txt .env
 ```
 
-**Linux/Mac:**
-```bash
-cp env_example.txt .env
-```
+编辑 `.env` 文件，关键配置如下：
 
-编辑 `.env` 文件，配置您选择的LLM提供商：
-
-**使用DeepSeek（默认）：**
 ```
-LLM_PROVIDER=deepseek
-DEEPSEEK_API_KEY=your_deepseek_api_key_here
-```
-
-**使用OpenAI：**
-```
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your_openai_api_key_here
-OPENAI_MODEL=gpt-3.5-turbo
-```
-
-**使用通义千问：**
-```
+# LLM 提供商: qwen, openai, zhipu, moonshot
 LLM_PROVIDER=qwen
-QWEN_API_KEY=your_qwen_api_key_here
+# 对应的 API Key
+QWEN_API_KEY=sk-xxxxxxxxxxxx
+# OPENAI_API_KEY=sk-xxxxxxxx (如果使用 OpenAI)
+
+# 服务端口
+FLASK_PORT=5000
+
+# 微信消息中转服务器地址 (用于发送客服消息)
+MAIN_SERVER=[http://your-relay-server.com](http://your-relay-server.com)
 ```
 
-> 💡 获取API密钥:
-> - DeepSeek: [DeepSeek平台](https://platform.deepseek.com/)
-> - OpenAI: [OpenAI平台](https://platform.openai.com/)
-> - 通义千问: [阿里云DashScope](https://dashscope.console.aliyun.com/)
-> - 智谱AI: [智谱AI平台](https://open.bigmodel.cn/)
-> - 月之暗面: [Moonshot平台](https://platform.moonshot.cn/)
-> 
-> 📖 详细的模型切换指南请参考 [MODEL_SWITCHING_GUIDE.md](MODEL_SWITCHING_GUIDE.md)
+### 3. 运行方式
 
-### 3. 启动后端服务
+#### 方式 A: Docker Compose (推荐)
 
-**方式1: 使用启动脚本（推荐）**
+一键启动服务和 Ngrok 隧道：
 
-Windows:
-```bash
-run.bat
+```
+docker-compose up -d --build
 ```
 
-Linux/Mac:
-```bash
-chmod +x run.sh
-./run.sh
+启动后，访问 `http://localhost:4040` 查看 Ngrok 的公网 URL，将其配置到你的微信公众号后台。
+
+#### 方式 B: 本地 Python 运行
+
+```
+# 安装依赖
+pip install -r requirements.txt
+
+# 启动服务
+python wechat_service.py
 ```
 
-**方式2: 直接运行Python**
+服务将在 `http://0.0.0.0:5000` 启动。
 
-```bash
-python app.py
-```
+## 📖 API 接口说明
 
-服务将在 `http://127.0.0.1:5000` 启动
+### 1. 微信消息入口 (Webhook)
 
-### 4. 打开前端界面
+- **URL**: `POST /message`
+- **描述**: 接收微信（或中转服务）转发的用户消息。
+- **机制**: 立即返回文本 "正在为您生成音乐推荐..."，随后在后台线程处理并通过客服接口回调。
+- **参数**: `from_user` (OpenID), `content` (消息内容), `type` (text)。
 
-在浏览器中打开 `index.html` 文件，或者使用以下命令启动一个简单的HTTP服务器：
+### 2. 标准推荐接口 (RESTful)
 
-```bash
-# Python 3
-python -m http.server 8000
+- **URL**: `POST /recommend`
 
-# 然后访问 http://localhost:8000/index.html
-```
+- **描述**: 供 Web 前端或调试使用的同步接口。
 
-## 📖 API文档
+- **请求示例**:
 
-### POST /recommend
-
-获取音乐推荐
-
-**请求体:**
-```json
-{
-  "message": "我想听点悲伤的歌"
-}
-```
-
-**响应:**
-```json
-{
-  "success": true,
-  "recommendation": "根据你的需求，我为你推荐以下悲伤的歌曲...",
-  "matched_songs": [
-    {
-      "id": 5,
-      "title": "Someone Like You",
-      "artist": "Adele",
-      "genre": "Pop",
-      "mood": "sad",
-      "year": 2011,
-      "duration": 285
-    }
-  ],
-  "intent": {
-    "intent": "find_music",
-    "mood": "sad",
-    "genre": null,
-    "artist": null
+  ```
+  {
+    "message": "推荐几首适合下雨天听的周杰伦的歌",
+    "session_id": "test_user_001"
   }
-}
-```
+  ```
 
-### GET /health
+### 3. 管理后台统计
 
-健康检查端点
+- **URL**: `GET /admin/stats`
+- **描述**: 获取总用户数、今日活跃用户、热门意图分布及最近对话日志。
 
-### GET /stats
+### 4. 用户列表
 
-获取知识库统计信息
+- **URL**: `GET /admin/users?page=1&page_size=20`
+- **描述**: 分页查看与系统交互过的微信用户。
 
-## 🔧 核心模块说明
+## 🛡️ 幻觉校验工作流
 
-### 1. LLMClient (`llm_client.py`)
+这是本系统区别于普通 ChatBot 的核心逻辑：
 
-通用的LLM客户端，支持多种模型提供商：
-- `DeepSeekClient`: DeepSeek API客户端
-- `OpenAIClient`: OpenAI/Azure OpenAI客户端
-- `QwenClient`: 通义千问API客户端
-- `ZhipuClient`: 智谱AI客户端
-- `MoonshotClient`: 月之暗面客户端
-- `MusicRecommendationClient`: 音乐推荐业务逻辑封装
-  - `extract_intent()`: 从用户输入中提取意图和实体
-  - `generate_search_query()`: 生成Python搜索查询代码
-  - `generate_recommendation()`: 生成推荐回复
-
-### 2. KnowledgeBase (`knowledge_base.py`)
-
-管理JSON知识库：
-- `load()`: 加载JSON数据
-- `search()`: 执行搜索查询
-- `search_by_conditions()`: 基于条件搜索（备用方法）
-
-### 3. Flask App (`app.py`)
-
-Web服务主应用：
-- `/recommend`: 主要的推荐端点
-- `/health`: 健康检查
-- `/stats`: 统计信息
-
-## 🎯 使用示例
-
-### 示例1: 基于情绪的推荐
-```
-用户: "我想听点悲伤的歌"
-系统: 推荐包含 "Someone Like You", "Yesterday", "Hallelujah" 等
-```
-
-### 示例2: 基于流派的推荐
-```
-用户: "推荐一些摇滚音乐"
-系统: 推荐包含 "Bohemian Rhapsody", "Hotel California", "Stairway to Heaven" 等
-```
-
-### 示例3: 基于歌手的推荐
-```
-用户: "推荐Adele的歌"
-系统: 推荐 Adele 的歌曲
-```
+1. **意图提取**: LLM 分析用户输入（例如："我想听伤感的粤语歌"）。
+2. **本地检索**: 在 `music_data.json` 中查找。
+   - *命中*: 直接返回结果。
+   - *未命中*: 进入生成模式。
+3. **LLM 生成**: 模型尝试生成 5 首符合条件的歌曲。
+4. **Verifier 介入**: `verifier.py` 扮演严苛的版权管理员，要求 LLM 为每一首歌提供**专辑名**和**发行年份**作为证据。
+5. **过滤与入库**:
+   - 无法提供确凿证据的歌曲被剔除。
+   - 验证通过的歌曲被作为推荐结果返回。
+   - 系统**异步**将新歌写入 `music_data.json`，完成自学习。
 
 ## 🛠️ 技术栈
 
-- **后端**: Flask (Python Web框架)
-- **AI模型**: 支持多种LLM（DeepSeek、OpenAI、通义千问、智谱AI、月之暗面等）
-- **知识库**: JSON格式数据存储
-- **前端**: HTML + CSS + JavaScript (原生)
-- **API通信**: RESTful API
-
-## 🔄 切换LLM模型
-
-项目支持多种LLM提供商，只需修改 `.env` 文件中的配置即可切换：
-
-```bash
-# 切换到OpenAI
-LLM_PROVIDER=openai
-OPENAI_API_KEY=your_key_here
-
-# 切换到通义千问
-LLM_PROVIDER=qwen
-QWEN_API_KEY=your_key_here
-```
-
-详细的切换指南和配置说明请参考：[MODEL_SWITCHING_GUIDE.md](MODEL_SWITCHING_GUIDE.md)
-
-## 📝 扩展建议
-
-1. **添加更多音乐数据**: 扩展 `music_data.json` 文件
-2. **支持音频播放**: 集成音乐播放API
-3. **用户历史记录**: 添加数据库存储用户交互历史
-4. **个性化推荐**: 基于用户历史偏好进行推荐
-5. **多语言支持**: 支持更多语言的音乐推荐
+- **Web 框架**: Flask 3.0
+- **数据库**: SQLite + SQLAlchemy (ORM)
+- **LLM 客户端**: Requests (支持 OpenAI 协议及各家私有协议)
+- **部署**: Docker + Docker Compose
+- **内网穿透**: Ngrok
 
 ## 🤝 贡献
 
-欢迎提交Issue和Pull Request！
+欢迎提交 Issue 和 Pull Request！
 
 ## 📄 许可证
 
 MIT License
-
-## 🙏 致谢
-
-- [DeepSeek](https://www.deepseek.com/) - 提供强大的LLM API
-- [Flask](https://flask.palletsprojects.com/) - 优秀的Python Web框架
-
----
-
-**享受音乐，享受AI！** 🎵✨
-

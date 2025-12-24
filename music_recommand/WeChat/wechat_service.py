@@ -252,9 +252,9 @@ def recommend_core(user_input: str, session_id: Optional[str]) -> Dict[str, Any]
     except Exception as e:
         logger.debug(f"处理会话刷新/超时逻辑时出错: {e}")
 
-    # 步骤1: 意图识别
+    # 步骤1: 意图识别（使用该 session 的历史上下文）
     logger.info("🔍 步骤1: 意图识别...")
-    intent_data = music_client.extract_intent(user_input, history=CHAT_CONTEXT)
+    intent_data = music_client.extract_intent(user_input, history=user_chat)
     logger.info(f"   识别结果: {intent_data}")
 
     # 步骤2: 基于意图生成结构化搜索参数
@@ -262,9 +262,9 @@ def recommend_core(user_input: str, session_id: Optional[str]) -> Dict[str, Any]
     search_params = music_client.generate_search_query(intent_data, available_fields)
     logger.info(f"   搜索参数: {search_params}")
 
-    # 构建全局排除列表：最近 10 轮推荐过的歌曲标题
+    # 构建该 session 的排除列表：最近 10 轮推荐过的歌曲标题（仅基于当前用户）
     exclude_titles: List[str] = []
-    recent_history = RECOMMENDATION_HISTORY[-10:]
+    recent_history = rec_history[-10:]
     for turn_songs in recent_history:
         for title in turn_songs:
             if title:
@@ -301,12 +301,13 @@ def recommend_core(user_input: str, session_id: Optional[str]) -> Dict[str, Any]
     source = "knowledge_base"
     if not matched_songs:
         logger.info("   未找到匹配歌曲，使用大模型推荐通用歌曲...")
+        # 将当前用户的历史作为去重依据（避免不同用户之间互相影响）
         llm_recommendation = music_client.generate_recommendation_without_matches(
             user_input,
             intent_data,
-            conversation_history=CHAT_CONTEXT,
+            conversation_history=user_chat,
             recommended_song_ids=recommended_song_ids,
-            exclude_titles=[t for turn in RECOMMENDATION_HISTORY for t in turn],
+            exclude_titles=[t for turn in rec_history for t in turn],
         )
 
         recommendation = llm_recommendation.get(
@@ -356,7 +357,7 @@ def recommend_core(user_input: str, session_id: Optional[str]) -> Dict[str, Any]
             user_input,
             matched_songs[:5],
             intent_data,
-            conversation_history=CHAT_CONTEXT,
+            conversation_history=user_chat,
         )
 
     # 记录推荐的歌曲到内存（用于推荐去重）
@@ -366,18 +367,20 @@ def recommend_core(user_input: str, session_id: Optional[str]) -> Dict[str, Any]
             sid = _song_id(song)
             session_set.add(sid)
 
-        # 记录到全局推荐历史（只记录标题，用于跨会话的去重）
+        # 记录到该用户的推荐历史（只记录标题，用于用户级去重）
         current_titles = [s.get("title") for s in matched_songs if s.get("title")]
         if current_titles:
-            RECOMMENDATION_HISTORY.append(current_titles)
-            if len(RECOMMENDATION_HISTORY) > 100:
-                del RECOMMENDATION_HISTORY[:-100]
+            rec_history.append(current_titles)
+            if len(rec_history) > 100:
+                del rec_history[:-100]
+            USER_REC_HISTORY[session_id] = rec_history
 
-    # 使用全局滑动窗口记录对话历史（仅保留最近 10 轮）
-    CHAT_CONTEXT.append({"role": "user", "content": user_input})
-    CHAT_CONTEXT.append({"role": "assistant", "content": recommendation})
-    if len(CHAT_CONTEXT) > 20:
-        del CHAT_CONTEXT[:-20]
+    # 使用 per-session 滑动窗口记录对话历史（仅保留最近 10 轮）
+    user_chat.append({"role": "user", "content": user_input})
+    user_chat.append({"role": "assistant", "content": recommendation})
+    if len(user_chat) > 20:
+        del user_chat[:-20]
+    USER_CHAT_CONTEXTS[session_id] = user_chat
 
     return {
         "success": True,
@@ -463,12 +466,26 @@ def stats():
 
 @app.route("/reset", methods=["POST"])
 def reset_chat_context():
-    """清空全局对话上下文和会话推荐去重集合"""
-    global CHAT_CONTEXT, SESSION_RECOMMENDED_IDS
-    CHAT_CONTEXT = []
-    SESSION_RECOMMENDED_IDS = {}
-    logger.info("🧹 已清空全局对话上下文 CHAT_CONTEXT 以及会话推荐去重缓存")
-    return jsonify({"success": True, "message": "聊天上下文与推荐去重缓存已清空"})
+    """
+    清空会话上下文和会话推荐去重集合。
+    支持 POST JSON 或 form 字段 `session_id` 来只清除指定会话的数据；若未提供，则清空所有会话的数据（管理员操作）。
+    """
+    data = request.get_json(silent=True) or {}
+    sid = data.get("session_id") or request.form.get("session_id")
+    if sid:
+        USER_CHAT_CONTEXTS.pop(sid, None)
+        USER_REC_HISTORY.pop(sid, None)
+        SESSION_RECOMMENDED_IDS.pop(sid, None)
+        SESSION_LAST_ACTIVE.pop(sid, None)
+        logger.info(f"🧹 已清除会话 {sid} 的上下文与推荐缓存")
+        return jsonify({"success": True, "message": f"已清除会话 {sid} 的上下文与推荐缓存"})
+    else:
+        USER_CHAT_CONTEXTS.clear()
+        USER_REC_HISTORY.clear()
+        SESSION_RECOMMENDED_IDS.clear()
+        SESSION_LAST_ACTIVE.clear()
+        logger.info("🧹 已清空所有会话的上下文与推荐缓存")
+        return jsonify({"success": True, "message": "已清空所有会话的上下文与推荐缓存"})
 
 
 @app.route("/admin/delete_song", methods=["POST"])
